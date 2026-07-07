@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ส่วนตัวและการแก้ไขข้อมูล</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Sarabun', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased pb-16">
+
+    <!-- ส่วนหัวของเว็บ (Hero Background) -->
+    <div id="hero-bg" class="h-64 md:h-80 w-full bg-gradient-to-r from-indigo-500 to-blue-600 relative overflow-hidden transition-all duration-500">
+        <!-- ลายกราฟิกแบคกราวด์ -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute transform -rotate-45 -left-12 -top-12 w-96 h-96 bg-white rounded-full"></div>
+            <div class="absolute transform rotate-45 right-0 bottom-0 w-80 h-80 bg-white rounded-full"></div>
+        </div>
+        
+        <!-- ปุ่มแก้ไขข้อมูล (ซ่อนเมื่ออยู่ในโหมดแก้ไข) -->
+        <div id="edit-btn-container" class="absolute top-4 right-4 z-10">
+            <button onclick="startEditing()" class="flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-slate-800 font-medium py-2 px-4 rounded-xl shadow-lg transition-all transform hover:scale-105">
+                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                <span>แก้ไขโปรไฟล์</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- กล่องเนื้อหาหลัก (Main Container) -->
+    <div class="max-w-5xl mx-auto px-4 -mt-32 md:-mt-40 relative z-20">
+        
+        <!-- บล็อกข้อมูลส่วนตัวด้านบนสุด (Profile Card) -->
+        <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 md:p-8 mb-8 transition-all">
+            <div class="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+                
+                <!-- โซนรูปโปรไฟล์ -->
+                <div class="relative group">
+                    <div id="avatar-container" class="w-36 h-36 md:w-44 md:h-44 rounded-2xl overflow-hidden border-4 border-white shadow-md relative transition-all">
+                        <!-- เปลี่ยนเป็นภาพเริ่มต้นแบบเวกเตอร์/ภาพออนไลน์ที่ปลอดภัย พร้อมโครงสร้าง onError สำรอง -->
+                        <img id="profile-avatar" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=500" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=500';" alt="Profile Avatar" class="w-full h-full object-cover">
+                        
+                        <!-- ปุ่มอัปโหลดรูปภาพ (แสดงเฉพาะเวลาแก้ไข) -->
+                        <button id="upload-avatar-btn" onclick="triggerFileInput()" class="absolute inset-0 bg-black/50 hover:bg-black/65 transition-colors flex flex-col items-center justify-center text-white gap-2 hidden">
+                            <i data-lucide="camera" class="w-6 h-6"></i>
+                            <span class="text-xs font-medium">เปลี่ยนรูปภาพ</span>
+                        </button>
+                    </div>
+                    <input type="file" id="file-input" onchange="handleAvatarChange(event)" accept="image/*" class="hidden">
+                </div>
+
+                <!-- โซนข้อมูล ชื่อ / ตำแหน่ง -->
+                <div class="flex-1 space-y-4 w-full">
+                    <!-- โหมดแสดงผลปกติ -->
+                    <div id="profile-display-info" class="block">
+                        <div class="flex flex-col md:flex-row md:items-baseline gap-2 justify-center md:justify-start">
+                            <h1 id="display-name" class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">Nithikorn Artumnouy</h1>
+                            <span id="display-nickname" class="text-lg md:text-xl font-semibold text-indigo-600"></span>
+                        </div>
+                        <p id="display-role" class="text-lg md:text-xl text-slate-500 mt-1 font-medium">Student</p>
+                    </div>
+
+                    <!-- โหมดแก้ไขข้อมูลส่วนตัว -->
+                    <div id="profile-edit-info" class="hidden space-y-3">
+                        <div>
+                          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">ชื่อ - นามสกุล</label>
+                          <input type="text" id="edit-name" class="w-full px-4 py-2 border border-slate-200 rounded-xl text-lg font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none" placeholder="กรอกชื่อ-นามสกุลของคุณ">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">ชื่อเล่น</label>
+                            <input type="text" id="edit-nickname" class="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none" placeholder="ชื่อเล่น">
+                          </div>
+                          <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">ตำแหน่ง / สายงาน</label>
+                            <input type="text" id="edit-role" class="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none" placeholder="เช่น Student">
+                          </div>
+                        </div>
+                    </div>
+
+                    <!-- ข้อมูลการติดต่อ -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600 pt-2 border-t border-slate-100">
+                        <!-- ติดต่อโหมดปกติ -->
+                        <div id="contact-display" class="grid grid-cols-1 sm:grid-cols-2 gap-2 col-span-2">
+                            <div class="flex items-center gap-2.5 justify-center md:justify-start">
+                                <i data-lucide="mail" class="w-4 h-4 text-indigo-600 contact-icon"></i>
+                                <span id="display-email" class="truncate">691540005012-9@ksu.ac.th</span>
+                            </div>
+                            <div class="flex items-center gap-2.5 justify-center md:justify-start">
+                                <i data-lucide="phone" class="w-4 h-4 text-indigo-600 contact-icon"></i>
+                                <span id="display-phone">0610184788</span>
+                            </div>
+                            <div class="flex items-center gap-2.5 justify-center md:justify-start">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-indigo-600 contact-icon"></i>
+                                <span id="display-location">กาฬสินธุ์, ประเทศไทย</span>
+                            </div>
+                            <div class="flex items-center gap-2.5 justify-center md:justify-start">
+                                <i data-lucide="globe" class="w-4 h-4 text-indigo-600 contact-icon"></i>
+                                <a id="display-website" href="https://www.nattapon-dev.com" target="_blank" rel="noopener noreferrer" class="hover:underline text-slate-700 font-medium">
+                                    www.nattapon-dev.com
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- ติดต่อโหมดแก้ไข -->
+                        <div id="contact-edit" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 col-span-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">อีเมล</label>
+                                <input type="email" id="edit-email" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="email@example.com">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">เบอร์โทรศัพท์</label>
+                                <input type="text" id="edit-phone" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="08x-xxx-xxxx">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">ที่อยู่ปัจจุบัน</label>
+                                <input type="text" id="edit-location" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เช่น กรุงเทพฯ, ประเทศไทย">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">เว็บไซต์ / ผลงาน</label>
+                                <input type="text" id="edit-website" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="www.yourwebsite.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- แถบควบคุมกรณีเปิดใช้งานโหมดการแก้ไข -->
+        <div id="edit-alert-bar" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 hidden">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-amber-100 text-amber-800 rounded-lg">
+                    <i data-lucide="palette" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-amber-900 text-sm">กำลังอยู่ในโหมดแก้ไขข้อมูล</h4>
+                    <p class="text-xs text-amber-700">คุณสามารถพิมพ์แก้ไข อัปเดตทักษะ และปรับโทนสีหน้าเว็บได้ทันที!</p>
+                </div>
+            </div>
+            
+            <!-- ตัวเลือกเปลี่ยนสีธีม -->
+            <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-amber-100">
+                <span class="text-xs font-bold text-slate-500 mr-1">ธีมเว็บ:</span>
+                <div class="flex gap-1.5" id="theme-selector-container">
+                    <!-- ปุ่มสีธีมจะถูกเรนเดอร์ผ่าน JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- สองคอลัมน์ด้านล่าง -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- คอลัมน์ซ้าย (เกี่ยวกับตัวฉัน + ทักษะ) -->
+            <div class="lg:col-span-1 space-y-8">
+                
+                <!-- บล็อก: เกี่ยวกับตัวฉัน -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 pb-2 border-b border-slate-100 text-indigo-600 block-title">
+                        <i data-lucide="user" class="w-4.5 h-4.5"></i>
+                        <span>เกี่ยวกับตัวฉัน</span>
+                    </h2>
+                    <div id="about-display" class="block">
+                        <p id="display-about" class="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
+                            นักพัฒนาเว็บผู้หลงใหลในการสร้างสรรค์ประสบการณ์ใช้งานที่ยอดเยี่ยม ทำงานสายพัฒนาซอฟต์แวร์และออกแบบเว็บไซต์มามากกว่า 3 ปี ชอบเรียนรู้เทคโนโลยีใหม่ๆ และพัฒนาทักษะตนเองอยู่เสมอ
+                        </p>
+                    </div>
+                    <div id="about-edit" class="hidden">
+                        <textarea id="edit-about" class="w-full h-32 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="เขียนแนะนำตัวเองย่อๆ..."></textarea>
+                    </div>
+                </div>
+
+                <!-- บล็อก: ทักษะความสามารถ (Skills) -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 pb-2 border-b border-slate-100 text-indigo-600 block-title">
+                        <i data-lucide="heart" class="w-4.5 h-4.5"></i>
+                        <span>ทักษะและความสามารถ</span>
+                    </h2>
+                    
+                    <!-- ส่วนเพิ่มทักษะเฉพาะในโหมดแก้ไข -->
+                    <div id="skill-add-container" class="hidden flex gap-2">
+                        <input type="text" id="new-skill-input" class="flex-1 px-3 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="เพิ่มทักษะใหม่...">
+                        <button onclick="addNewSkill()" class="p-1.5 rounded-xl flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white btn-primary">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div id="skills-list" class="flex flex-wrap gap-2 pt-1">
+                        <!-- ทักษะจะแสดงผลตรงนี้ -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- คอลัมน์ขวา (ประวัติการทำงาน + การศึกษา) -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- บล็อก: ประวัติการทำงาน -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-5">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-600 block-title">
+                            <i data-lucide="briefcase" class="w-4.5 h-4.5"></i>
+                            <span>ประวัติการทำงาน</span>
+                        </h2>
+                        <button id="add-experience-btn" onclick="addExperienceRow()" class="text-xs flex items-center gap-1 font-semibold px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 btn-secondary hidden">
+                            <i data-lucide="plus" class="w-3 h-3"></i>
+                            <span>เพิ่มตำแหน่งงาน</span>
+                        </button>
+                    </div>
+
+                    <div id="experiences-container" class="relative border-l-2 border-slate-100 pl-5 ml-2.5 space-y-6">
+                        <!-- ไทม์ไลน์ประวัติการทำงานจะแสดงตรงนี้ -->
+                    </div>
+                </div>
+
+                <!-- บล็อก: ประวัติการศึกษา -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-5">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-600 block-title">
+                            <i data-lucide="graduation-cap" class="w-4.5 h-4.5"></i>
+                            <span>ประวัติการศึกษา</span>
+                        </h2>
+                        <button id="add-education-btn" onclick="addEducationRow()" class="text-xs flex items-center gap-1 font-semibold px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 btn-secondary hidden">
+                            <i data-lucide="plus" class="w-3 h-3"></i>
+                            <span>เพิ่มการศึกษา</span>
+                        </button>
+                    </div>
+
+                    <div id="educations-container" class="relative border-l-2 border-slate-100 pl-5 ml-2.5 space-y-6">
+                        <!-- ไทม์ไลน์การศึกษาจะแสดงตรงนี้ -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- แถบควบคุมด้านล่าง (Fixed Bottom Bar บันทึกข้อมูล) -->
+    <div id="bottom-control-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-8px_20px_rgba(0,0,0,0.05)] py-4 px-6 z-50 flex justify-between items-center max-w-xl mx-auto md:rounded-t-2xl transition-all duration-300 transform translate-y-full hidden">
+        <div class="text-xs font-semibold text-slate-500">
+            คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก
+        </div>
+        <div class="flex gap-2">
+            <button onclick="cancelEditing()" class="flex items-center gap-1 px-4 py-2 text-sm font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+                <span>ยกเลิก</span>
+            </button>
+            <button id="save-btn" onclick="saveProfile()" class="flex items-center gap-1.5 px-5 py-2 text-sm font-bold rounded-xl shadow-md transition-all transform active:scale-95 bg-indigo-600 hover:bg-indigo-700 text-white btn-primary">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>บันทึกโปรไฟล์</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- กล่องแจ้งเตือนผลลัพธ์ (Toast Notification) -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 z-50 transform translate-y-24 opacity-0 transition-all duration-300">
+        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+        <span id="toast-message" class="text-sm font-semibold">บันทึกสำเร็จ!</span>
+    </div>
+
+    <script>
+        // ข้อมูลหลักเริ่มต้น (อัปเดตรูปเริ่มต้นให้พร้อมแสดงผลบน Sandbox Preview)
+        let profile = {
+            name: "Nithikorn Artumnouy",
+            nickname: "",
+            role: "Student",
+            about: "นักพัฒนาเว็บผู้หลงใหลในการสร้างสรรค์ประสบการณ์ใช้งานที่ยอดเยี่ยม ทำงานสายพัฒนาซอฟต์แวร์และออกแบบเว็บไซต์มามากกว่า 3 ปี ชอบเรียนรู้เทคโนโลยีใหม่ๆ และพัฒนาทักษะตนเองอยู่เสมอ",
+            email: "691540005012-9@ksu.ac.th",
+            phone: "0610184788",
+            location: "กาฬสินธุ์, ประเทศไทย",
+            website: "www.nattapon-dev.com",
+            avatar: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=500", // รูปพรีเมียมเริ่มต้น
+            themeColor: "indigo",
+            skills: ["React.js", "Tailwind CSS", "Node.js", "TypeScript", "UI/UX Design", "Figma", "Git"],
+            experiences: [
+                { id: 1, year: "2024 - ปัจจุบัน", position: "Senior Frontend Developer", company: "Tech Innovation Co., Ltd." },
+                { id: 2, year: "2022 - 2024", position: "Junior Web Developer", company: "Creative Digital Agency" }
+            ],
+            educations: [
+                { id: 1, year: "2018 - 2022", degree: "ปริญญาตรี วิทยาการคอมพิวเตอร์", institution: "มหาวิทยาลัยเทคโนโลยีชั้นนำ" }
+            ]
+        };
+
+        // ตัวแปรเก็บข้อมูลสำรองชั่วคราวระหว่างการแก้ไข
+        let tempProfile = JSON.parse(JSON.stringify(profile));
+        let isEditing = false;
+
+        // การตั้งค่าชุดสีสำหรับแต่ละธีม
+        const themes = {
+            indigo: {
+                gradient: 'from-indigo-500 to-blue-600',
+                primary: 'bg-indigo-600 hover:bg-indigo-700 text-white',
+                secondary: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200',
+                accentText: 'text-indigo-600',
+                badge: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                focusRing: 'focus:ring-indigo-500 focus:border-indigo-500'
+            },
+            emerald: {
+                gradient: 'from-emerald-500 to-teal-600',
+                primary: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+                secondary: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200',
+                accentText: 'text-emerald-600',
+                badge: 'bg-emerald-50 text-emerald-700 border-indigo-100',
+                focusRing: 'focus:ring-emerald-500 focus:border-emerald-500'
+            },
+            rose: {
+                gradient: 'from-rose-500 to-pink-600',
+                primary: 'bg-rose-600 hover:bg-rose-700 text-white',
+                secondary: 'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200',
+                accentText: 'text-rose-600',
+                badge: 'bg-rose-50 text-rose-700 border-rose-100',
+                focusRing: 'focus:ring-rose-500 focus:border-rose-500'
+            },
+            amber: {
+                gradient: 'from-amber-500 to-yellow-600',
+                primary: 'bg-amber-600 hover:bg-amber-700 text-white',
+                secondary: 'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200',
+                accentText: 'text-amber-600',
+                badge: 'bg-amber-50 text-amber-700 border-amber-100',
+                focusRing: 'focus:ring-amber-500 focus:border-amber-500'
+            },
+            sky: {
+                gradient: 'from-sky-500 to-indigo-600',
+                primary: 'bg-sky-600 hover:bg-sky-700 text-white',
+                secondary: 'bg-sky-50 text-sky-700 hover:bg-sky-100 border-sky-200',
+                accentText: 'text-sky-600',
+                badge: 'bg-sky-50 text-sky-700 border-sky-100',
+                focusRing: 'focus:ring-sky-500 focus:border-sky-500'
+            },
+            violet: {
+                gradient: 'from-violet-500 to-purple-600',
+                primary: 'bg-violet-600 hover:bg-violet-700 text-white',
+                secondary: 'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200',
+                accentText: 'text-violet-600',
+                badge: 'bg-violet-50 text-violet-700 border-violet-100',
+                focusRing: 'focus:ring-violet-500 focus:border-violet-500'
+            }
+        };
+
+        // รายการปุ่มธีมที่มีให้เลือกตอนแก้ไข
+        const themeOptions = [
+            { value: 'indigo', colorClass: 'bg-indigo-600' },
+            { value: 'emerald', colorClass: 'bg-emerald-600' },
+            { value: 'rose', colorClass: 'bg-rose-600' },
+            { value: 'amber', colorClass: 'bg-amber-600' },
+            { value: 'sky', colorClass: 'bg-sky-600' },
+            { value: 'violet', colorClass: 'bg-violet-600' }
+        ];
+
+        // ฟังก์ชันเริ่มต้นตอนเปิดเว็บ
+        window.onload = function() {
+            renderPage();
+            renderThemeSelector();
+            lucide.createIcons();
+        };
+
+        // ฟังก์ชันปรับสไตล์สีของเว็บตามธีมที่เลือก
+        function applyThemeColors(themeName) {
+            const theme = themes[themeName] || themes.indigo;
+            
+            // เปลี่ยนแบคกราวด์ Hero
+            const hero = document.getElementById('hero-bg');
+            hero.className = `h-64 md:h-80 w-full bg-gradient-to-r ${theme.gradient} relative overflow-hidden transition-all duration-500`;
+
+            // ปรับสีข้อความหัวข้อบล็อกต่างๆ
+            const titles = document.querySelectorAll('.block-title');
+            titles.forEach(el => {
+                el.className = `text-lg font-bold flex items-center gap-2 pb-2 border-b border-slate-100 ${theme.accentText} block-title`;
+            });
+
+            // ปรับสีข้อความชื่อเล่นและไอคอนติดต่อ
+            const nickname = document.getElementById('display-nickname');
+            if (nickname) {
+                nickname.className = `text-lg md:text-xl font-semibold ${theme.accentText}`;
+            }
+
+            const contactIcons = document.querySelectorAll('.contact-icon');
+            contactIcons.forEach(icon => {
+                icon.className = `w-4 h-4 ${theme.accentText} contact-icon`;
+            });
+
+            // ปรับปุ่มหลักๆ (Primary Buttons)
+            const primaryBtns = document.querySelectorAll('.btn-primary');
+            primaryBtns.forEach(btn => {
+                btn.className = `p-1.5 rounded-xl flex items-center justify-center transition-all ${theme.primary} btn-primary`;
+            });
+
+            const saveBtn = document.getElementById('save-btn');
+            if (saveBtn) {
+                saveBtn.className = `flex items-center gap-1.5 px-5 py-2 text-sm font-bold rounded-xl shadow-md transition-all transform active:scale-95 ${theme.primary} btn-primary`;
+            }
+
+            // ปรับปุ่มรอง (Secondary Buttons)
+            const secondaryBtns = document.querySelectorAll('.btn-secondary');
+            secondaryBtns.forEach(btn => {
+                btn.className = `text-xs flex items-center gap-1 font-semibold px-2.5 py-1.5 rounded-lg border transition-all ${theme.secondary} btn-secondary`;
+            });
+
+            // ปรับสีของช่อง Input Focus
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], textarea');
+            inputs.forEach(input => {
+                input.className = input.className.replace(/focus:ring-\w+-500/g, `focus:ring-${themeName}-500`);
+                input.className = input.className.replace(/focus:border-\w+-500/g, `focus:border-${themeName}-500`);
+            });
+        }
+
+        // ฟังก์ชันเรนเดอร์เนื้อหาหน้าจอหลัก
+        function renderPage() {
+            const currentData = isEditing ? tempProfile : profile;
+
+            // 1. อัปเดตข้อมูล Text พื้นฐาน
+            document.getElementById('display-name').textContent = currentData.name;
+            document.getElementById('display-nickname').textContent = currentData.nickname ? `(${currentData.nickname})` : '';
+            document.getElementById('display-role').textContent = currentData.role;
+            document.getElementById('display-email').textContent = currentData.email;
+            document.getElementById('display-phone').textContent = currentData.phone;
+            document.getElementById('display-location').textContent = currentData.location;
+            
+            const websiteEl = document.getElementById('display-website');
+            websiteEl.textContent = currentData.website;
+            websiteEl.href = `https://${currentData.website}`;
+
+            document.getElementById('display-about').textContent = currentData.about;
+            document.getElementById('profile-avatar').src = currentData.avatar;
+
+            // 2. เรนเดอร์ทักษะ (Skills)
+            const skillsList = document.getElementById('skills-list');
+            skillsList.innerHTML = '';
+            
+            const themeConfig = themes[currentData.themeColor];
+            currentData.skills.forEach(skill => {
+                const badge = document.createElement('span');
+                badge.className = `text-xs font-semibold px-3 py-1.5 rounded-lg border flex items-center gap-1.5 transition-all ${themeConfig.badge}`;
+                
+                if (isEditing) {
+                    badge.innerHTML = `
+                        ${skill}
+                        <button onclick="removeSkill('${skill}')" class="text-slate-400 hover:text-red-500 transition-colors">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    `;
+                } else {
+                    badge.innerHTML = skill;
+                }
+                skillsList.appendChild(badge);
+            });
+
+            // 3. เรนเดอร์ประวัติการทำงาน (Experiences)
+            const experiencesContainer = document.getElementById('experiences-container');
+            experiencesContainer.innerHTML = '';
+            
+            currentData.experiences.forEach(exp => {
+                const row = document.createElement('div');
+                row.className = 'relative group';
+                
+                if (isEditing) {
+                    row.innerHTML = `
+                        <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 bg-amber-500 ring-amber-100"></span>
+                        <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div class="flex justify-between items-center">
+                                <input type="text" value="${exp.year}" onchange="updateExpField(${exp.id}, 'year', this.value)" class="text-xs font-semibold px-2 py-0.5 border border-slate-200 rounded focus:outline-none bg-white w-28 text-slate-500" placeholder="ปีทำงาน">
+                                <button onclick="removeExperienceRow(${exp.id})" class="text-slate-400 hover:text-red-500 p-1">
+                                    <i data-lucide="trash-2" class="w-4.5 h-4.5"></i>
+                                </button>
+                            </div>
+                            <input type="text" value="${exp.position}" onchange="updateExpField(${exp.id}, 'position', this.value)" class="text-sm font-bold px-2 py-1 border border-slate-200 rounded focus:outline-none bg-white w-full" placeholder="ตำแหน่งงาน">
+                            <input type="text" value="${exp.company}" onchange="updateExpField(${exp.id}, 'company', this.value)" class="text-xs text-slate-600 px-2 py-1 border border-slate-200 rounded focus:outline-none bg-white w-full" placeholder="ชื่อบริษัท">
+                        </div>
+                    `;
+                } else {
+                    const themeClass = themes[profile.themeColor].primary.split(' ')[0];
+                    row.innerHTML = `
+                        <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 ${themeClass} ring-slate-100"></span>
+                        <div class="space-y-1">
+                            <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">${exp.year}</span>
+                            <h3 class="text-base font-bold text-slate-800">${exp.position}</h3>
+                            <p class="text-sm font-medium text-slate-500">${exp.company}</p>
+                        </div>
+                    `;
+                }
+                experiencesContainer.appendChild(row);
+            });
+
+            if (currentData.experiences.length === 0) {
+                experiencesContainer.innerHTML = '<p class="text-sm text-slate-400 py-2">ยังไม่มีประวัติการทำงาน</p>';
+            }
+
+            // 4. เรนเดอร์ประวัติการศึกษา (Educations)
+            const educationsContainer = document.getElementById('educations-container');
+            educationsContainer.innerHTML = '';
+
+            currentData.educations.forEach(edu => {
+                const row = document.createElement('div');
+                row.className = 'relative group';
+
+                if (isEditing) {
+                    row.innerHTML = `
+                        <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 bg-amber-500 ring-amber-100"></span>
+                        <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div class="flex justify-between items-center">
+                                <input type="text" value="${edu.year}" onchange="updateEduField(${edu.id}, 'year', this.value)" class="text-xs font-semibold px-2 py-0.5 border border-slate-200 rounded focus:outline-none bg-white w-28 text-slate-500" placeholder="ปีการศึกษา">
+                                <button onclick="removeEducationRow(${edu.id})" class="text-slate-400 hover:text-red-500 p-1">
+                                    <i data-lucide="trash-2" class="w-4.5 h-4.5"></i>
+                                </button>
+                            </div>
+                            <input type="text" value="${edu.degree}" onchange="updateEduField(${edu.id}, 'degree', this.value)" class="text-sm font-bold px-2 py-1 border border-slate-200 rounded focus:outline-none bg-white w-full" placeholder="ระดับการศึกษา/สาขาวิชา">
+                            <input type="text" value="${edu.institution}" onchange="updateEduField(${edu.id}, 'institution', this.value)" class="text-xs text-slate-600 px-2 py-1 border border-slate-200 rounded focus:outline-none bg-white w-full" placeholder="ชื่อสถานศึกษา">
+                        </div>
+                    `;
+                } else {
+                    const themeClass = themes[profile.themeColor].primary.split(' ')[0];
+                    row.innerHTML = `
+                        <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 ${themeClass} ring-slate-100"></span>
+                        <div class="space-y-1">
+                            <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">${edu.year}</span>
+                            <h3 class="text-base font-bold text-slate-800">${edu.degree}</h3>
+                            <p class="text-sm font-medium text-slate-500">${edu.institution}</p>
+                        </div>
+                    `;
+                }
+                educationsContainer.appendChild(row);
+            });
+
+            if (currentData.educations.length === 0) {
+                educationsContainer.innerHTML = '<p class="text-sm text-slate-400 py-2">ยังไม่มีประวัติการศึกษา</p>';
+            }
+
+            // นำธีมสีที่ตั้งค่ามาแสดงผล
+            applyThemeColors(currentData.themeColor);
+            
+            // รีเซ็ตเพื่อเรนเดอร์ไอคอน Lucide ใหม่ทุกรอบ
+            lucide.createIcons();
+        }
+
+        // เรนเดอร์ปุ่มสีที่ใช้เปลี่ยนธีมด้านบน
+        function renderThemeSelector() {
+            const container = document.getElementById('theme-selector-container');
+            container.innerHTML = '';
+            
+            themeOptions.forEach(opt => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.title = opt.value;
+                button.onclick = () => selectTheme(opt.value);
+                
+                // คลาสดีไซน์ปุ่มกลมสลับธีม
+                button.className = `w-6 h-6 rounded-full transition-transform border-2 ${opt.colorClass} ${tempProfile.themeColor === opt.value ? 'scale-110 border-slate-700 ring-2 ring-slate-300' : 'border-transparent hover:scale-105'}`;
+                container.appendChild(button);
+            });
+        }
+
+        // ฟังก์ชันคลิกเลือกธีมใหม่ในตัวเลือกธีม
+        function selectTheme(themeName) {
+            tempProfile.themeColor = themeName;
+            renderThemeSelector();
+            applyThemeColors(themeName);
+        }
+
+        // เปิดโหมดการแก้ไข (Edit Mode)
+        function startEditing() {
+            tempProfile = JSON.parse(JSON.stringify(profile)); // คัดลอกข้อมูลจริงมาสำรองไว้
+            isEditing = true;
+
+            // นำข้อมูลชั่วคราวใส่เข้าไปในฟิลด์อินพุตก่อนแสดงผล
+            document.getElementById('edit-name').value = tempProfile.name;
+            document.getElementById('edit-nickname').value = tempProfile.nickname;
+            document.getElementById('edit-role').value = tempProfile.role;
+            document.getElementById('edit-email').value = tempProfile.email;
+            document.getElementById('edit-phone').value = tempProfile.phone;
+            document.getElementById('edit-location').value = tempProfile.location;
+            document.getElementById('edit-website').value = tempProfile.website;
+            document.getElementById('edit-about').value = tempProfile.about;
+
+            // สลับการซ่อน/แสดง Elements ต่างๆ
+            document.getElementById('edit-btn-container').classList.add('hidden');
+            document.getElementById('profile-display-info').classList.add('hidden');
+            document.getElementById('contact-display').classList.add('hidden');
+            document.getElementById('about-display').classList.add('hidden');
+            
+            document.getElementById('upload-avatar-btn').classList.remove('hidden');
+            document.getElementById('profile-edit-info').classList.remove('hidden');
+            document.getElementById('contact-edit').classList.remove('hidden');
+            document.getElementById('edit-alert-bar').classList.remove('hidden');
+            document.getElementById('about-edit').classList.remove('hidden');
+            document.getElementById('skill-add-container').classList.remove('hidden');
+            document.getElementById('add-experience-btn').classList.remove('hidden');
+            document.getElementById('add-education-btn').classList.remove('hidden');
+
+            // แสดงแถบบันทึกและยกเลิกด้านล่าง
+            const bottomBar = document.getElementById('bottom-control-bar');
+            bottomBar.classList.remove('hidden');
+            setTimeout(() => {
+                bottomBar.classList.remove('translate-y-full');
+            }, 50);
+
+            renderPage();
+            renderThemeSelector();
+        }
+
+        // ปิดโหมดแก้ไขและยกเลิกการเปลี่ยนแปลงทั้งหมด
+        function cancelEditing() {
+            isEditing = false;
+
+            // ซ่อนอินพุตการแก้ไขและแสดงผลแบบปกติ
+            document.getElementById('edit-btn-container').classList.remove('hidden');
+            document.getElementById('profile-display-info').classList.remove('hidden');
+            document.getElementById('contact-display').classList.remove('hidden');
+            document.getElementById('about-display').classList.remove('hidden');
+            
+            document.getElementById('upload-avatar-btn').classList.add('hidden');
+            document.getElementById('profile-edit-info').classList.add('hidden');
+            document.getElementById('contact-edit').classList.add('hidden');
+            document.getElementById('edit-alert-bar').classList.add('hidden');
+            document.getElementById('about-edit').classList.add('hidden');
+            document.getElementById('skill-add-container').classList.add('hidden');
+            document.getElementById('add-experience-btn').classList.add('hidden');
+            document.getElementById('add-education-btn').classList.add('hidden');
+
+            // เลื่อนแถบควบคุมด้านล่างลง
+            const bottomBar = document.getElementById('bottom-control-bar');
+            bottomBar.classList.add('translate-y-full');
+            setTimeout(() => {
+                bottomBar.classList.add('hidden');
+            }, 300);
+
+            renderPage();
+        }
+
+        // บันทึกการเปลี่ยนแปลงข้อมูลลงในสถานะหลัก
+        function saveProfile() {
+            // ดึงข้อมูลจากอินพุตยัดกลับใส่ใน profile จริง
+            profile.name = document.getElementById('edit-name').value;
+            profile.nickname = document.getElementById('edit-nickname').value;
+            profile.role = document.getElementById('edit-role').value;
+            profile.email = document.getElementById('edit-email').value;
+            profile.phone = document.getElementById('edit-phone').value;
+            profile.location = document.getElementById('edit-location').value;
+            profile.website = document.getElementById('edit-website').value;
+            profile.about = document.getElementById('edit-about').value;
+            
+            // ข้อมูลแบบกลุ่มอื่นๆ อัปเดตจาก temp อยู่แล้วตามฟังก์ชันต่างๆ
+            profile.themeColor = tempProfile.themeColor;
+            profile.avatar = tempProfile.avatar;
+            profile.skills = [...tempProfile.skills];
+            profile.experiences = [...tempProfile.experiences];
+            profile.educations = [...tempProfile.educations];
+
+            isEditing = false;
+            cancelEditing(); // เพื่อคืนค่าและหน้าต่างแสดงผลกลับสู่ปกติ
+            
+            // แสดงหน้าต่างแจ้งเตือนว่าบันทึกเสร็จแล้ว
+            showToast("บันทึกข้อมูลและแก้ไขส่วนตัวเสร็จเรียบร้อยแล้ว!");
+        }
+
+        // แสดงกล่องแจ้งเตือนความสำเร็จ (Toast Notification)
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // ระบบคลิกอัปโหลดและเปลี่ยนรูปภาพโปรไฟล์
+        function triggerFileInput() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleAvatarChange(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    tempProfile.avatar = reader.result;
+                    document.getElementById('profile-avatar').src = reader.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // การเพิ่มและลบทักษะความสามารถ (Skills Management)
+        function addNewSkill() {
+            const input = document.getElementById('new-skill-input');
+            const skillValue = input.value.trim();
+            if (skillValue && !tempProfile.skills.includes(skillValue)) {
+                tempProfile.skills.push(skillValue);
+                input.value = '';
+                renderPage();
+            }
+        }
+
+        // removeSkill
+        function removeSkill(skillName) {
+            tempProfile.skills = tempProfile.skills.filter(s => s !== skillName);
+            renderPage();
+        }
+
+        // ระบบเพิ่ม ลบ แก้ไข ประวัติการทำงาน (Work Experience Management)
+        function updateExpField(id, field, value) {
+            tempProfile.experiences = tempProfile.experiences.map(exp => 
+                exp.id === id ? { ...exp, [field]: value } : exp
+            );
+        }
+
+        function addExperienceRow() {
+            const newId = tempProfile.experiences.length > 0 
+                ? Math.max(...tempProfile.experiences.map(e => e.id)) + 1 
+                : 1;
+            
+            tempProfile.experiences.push({
+                id: newId,
+                year: "ปีเริ่มต้น - สิ้นสุด",
+                position: "ชื่อตำแหน่งงาน",
+                company: "ชื่อบริษัท/องค์กร"
+            });
+            renderPage();
+        }
+
+        // ระบบเพิ่ม ลบ แก้ไข ประวัติการศึกษา (Education Management)
+        function updateEduField(id, field, value) {
+            tempProfile.educations = tempProfile.educations.map(edu => 
+                edu.id === id ? { ...edu, [field]: value } : edu
+            );
+        }
+
+        function addEducationRow() {
+            const newId = tempProfile.educations.length > 0 
+                ? Math.max(...tempProfile.educations.map(e => e.id)) + 1 
+                : 1;
+            
+            tempProfile.educations.push({
+                id: newId,
+                year: "ปีเริ่มต้น - สิ้นสุด",
+                degree: "ระดับการศึกษา/วุฒิ",
+                institution: "ชื่อสถานศึกษา"
+            });
+            renderPage();
+        }
+
+        // removeEducationRow
+        function removeEducationRow(id) {
+            tempProfile.educations = tempProfile.educations.filter(edu => edu.id !== id);
+            renderPage();
+        }
+
+        // ดักจับการกดปุ่ม Enter บนช่องพิมพ์เพิ่มทักษะความสามารถ
+        document.getElementById('new-skill-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addNewSkill();
+            }
+        });
+    </script>
+</body>
+</html>
