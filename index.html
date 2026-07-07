@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ส่วนตัว - Nithikorn Artumnouy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Sarabun', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased pb-16">
+
+    <!-- ส่วนหัวของเว็บ (Hero Background) -->
+    <div class="h-64 md:h-80 w-full bg-gradient-to-r from-indigo-500 to-blue-600 relative overflow-hidden">
+        <!-- ลายกราฟิกแบคกราวด์ -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute transform -rotate-45 -left-12 -top-12 w-96 h-96 bg-white rounded-full"></div>
+            <div class="absolute transform rotate-45 right-0 bottom-0 w-80 h-80 bg-white rounded-full"></div>
+        </div>
+    </div>
+
+    <!-- กล่องเนื้อหาหลัก (Main Container) -->
+    <div class="max-w-5xl mx-auto px-4 -mt-32 md:-mt-40 relative z-20">
+        
+        <!-- บล็อกข้อมูลส่วนตัวด้านบนสุด (Profile Card) -->
+        <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 md:p-8 mb-8">
+            <div class="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+                
+                <!-- โซนรูปโปรไฟล์ -->
+                <div class="relative">
+                    <div class="w-36 h-36 md:w-44 md:h-44 rounded-2xl overflow-hidden border-4 border-white shadow-md">
+                        <!-- รูปโปรไฟล์เริ่มต้นใช้รูปของคุณ -->
+                        <img id="profile-avatar" src="not so awesome.png" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=500';" alt="Profile Avatar" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <!-- โซนข้อมูล ชื่อ / ตำแหน่ง -->
+                <div class="flex-1 space-y-4 w-full">
+                    <div>
+                        <div class="flex flex-col md:flex-row md:items-baseline gap-2 justify-center md:justify-start">
+                            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">Nithikorn Artumnouy</h1>
+                        </div>
+                        <p class="text-lg md:text-xl text-slate-500 mt-1 font-medium">Student</p>
+                    </div>
+
+                    <!-- ข้อมูลการติดต่อ -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600 pt-4 border-t border-slate-100">
+                        <div class="flex items-center gap-2.5 justify-center md:justify-start">
+                            <i data-lucide="mail" class="w-4.5 h-4.5 text-indigo-600"></i>
+                            <span class="truncate">691540005012-9@ksu.ac.th</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 justify-center md:justify-start">
+                            <i data-lucide="phone" class="w-4.5 h-4.5 text-indigo-600"></i>
+                            <span>0610184788</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 justify-center md:justify-start">
+                            <i data-lucide="map-pin" class="w-4.5 h-4.5 text-indigo-600"></i>
+                            <span>กาฬสินธุ์, ประเทศไทย</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- สองคอลัมน์ด้านล่าง -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- คอลัมน์ซ้าย (เกี่ยวกับตัวฉัน + ทักษะ) -->
+            <div class="lg:col-span-1 space-y-8">
+                
+                <!-- บล็อก: เกี่ยวกับตัวฉัน -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 pb-2 border-b border-slate-100 text-indigo-600">
+                        <i data-lucide="user" class="w-4.5 h-4.5"></i>
+                        <span>เกี่ยวกับตัวฉัน</span>
+                    </h2>
+                    <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
+                        ยินดีต้อนรับสู่โปรไฟล์ของฉัน! ฉันเป็นนักศึกษาที่หลงใหลในการพัฒนาเว็บไซต์และเทคโนโลยี โดยเฉพาะอย่างยิ่ง ฉันมีความถนัดและเชี่ยวชาญในการทำแอนิเมชัน (Animation) ที่ลื่นไหลและสวยงาม เพื่อสร้างประสบการณ์การใช้งานที่น่าประทับใจและมีชีวิตชีวาบนเว็บไซต์
+                    </p>
+                </div>
+
+                <!-- บล็อก: ทักษะความสามารถ (Skills) -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 pb-2 border-b border-slate-100 text-indigo-600">
+                        <i data-lucide="heart" class="w-4.5 h-4.5"></i>
+                        <span>ทักษะและความสามารถ</span>
+                    </h2>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">React.js</span>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">Tailwind CSS</span>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">HTML & CSS</span>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">JavaScript</span>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">UI/UX Design</span>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">Git & GitHub</span>
+                        <!-- ส่วนล่างสุด: เพิ่มทักษะด้านอนิเมชัน -->
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">CSS Animations</span>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">Framer Motion</span>
+                        <span class="text-xs font-semibold px-3 py-1.5 rounded-lg border bg-indigo-50 text-indigo-700 border-indigo-100">Lottie & Web Animation</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- คอลัมน์ขวา (ประวัติการทำงาน + การศึกษา) -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- บล็อก: ประวัติการทำงาน / กิจกรรม -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-5">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-600">
+                            <i data-lucide="briefcase" class="w-4.5 h-4.5"></i>
+                            <span>ประวัติการทำงานและกิจกรรม</span>
+                        </h2>
+                    </div>
+
+                    <div class="relative border-l-2 border-slate-100 pl-5 ml-2.5 space-y-6">
+                        <!-- รายการกิจกรรม 1 -->
+                        <div class="relative group">
+                            <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 bg-indigo-600 ring-slate-100"></span>
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">2025 - ปัจจุบัน</span>
+                                <h3 class="text-base font-bold text-slate-800">นักพัฒนาเว็บอิสระ & การเรียนรู้ส่วนตัว</h3>
+                                <p class="text-sm font-medium text-slate-500">มุ่งเน้นการสร้างและพัฒนาโปรเจกต์ส่วนตัวโดยใช้เทคโนโลยีเว็บสมัยใหม่</p>
+                            </div>
+                        </div>
+                        <!-- รายการกิจกรรม 2 -->
+                        <div class="relative group">
+                            <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 bg-indigo-600 ring-slate-100"></span>
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">2024</span>
+                                <h3 class="text-base font-bold text-slate-800">ผู้เข้าร่วมกิจกรรมการพัฒนาทักษะไอที</h3>
+                                <p class="text-sm font-medium text-slate-500">เรียนรู้และเขียนโปรแกรมเบื้องต้น ร่วมกับกลุ่มเพื่อนร่วมสถาบัน</p>
+                            </div>
+                        </div>
+                        <!-- รายการกิจกรรม 3 (Portfolio Animation) -->
+                        <div class="relative group">
+                            <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 bg-indigo-600 ring-slate-100"></span>
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">Portfolio (Animation)</span>
+                                <h3 class="text-base font-bold text-slate-800">ผู้เชี่ยวชาญด้าน Web Animation</h3>
+                                <p class="text-sm font-medium text-slate-500">มีความสามารถในการออกแบบและพัฒนาแอนิเมชันที่ซับซ้อน เช่น การใช้ CSS Keyframes, Framer Motion และ Lottie เพื่อทำให้หน้าเว็บดูทันสมัย ดึงดูดความสนใจ และมีปฏิสัมพันธ์ที่ดีกับผู้ใช้งาน</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- บล็อก: ประวัติการศึกษา -->
+                <div class="bg-white rounded-3xl shadow-md border border-slate-100 p-6 space-y-5">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-600">
+                            <i data-lucide="graduation-cap" class="w-4.5 h-4.5"></i>
+                            <span>ประวัติการศึกษา</span>
+                        </h2>
+                    </div>
+
+                    <div class="relative border-l-2 border-slate-100 pl-5 ml-2.5 space-y-6">
+                        <div class="relative group">
+                            <span class="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-4 bg-indigo-600 ring-slate-100"></span>
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold text-slate-400 tracking-wider uppercase">ปัจจุบัน</span>
+                                <h3 class="text-base font-bold text-slate-800">ระดับอุดมศึกษา</h3>
+                                <p class="text-sm font-medium text-slate-500">มหาวิทยาลัยกาฬสินธุ์ (KSU)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // เรียกใช้งานเพื่อโหลดไอคอนทั้งหมดบนหน้าเว็บ
+        window.onload = function() {
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
